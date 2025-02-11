@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-StockAdvisorApplication<stock-advisor>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.bryanphone.stockadvisor.StockAdvisorApplication",
+            "projectName": "stock-advisor",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
