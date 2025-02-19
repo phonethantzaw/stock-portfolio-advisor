@@ -11,13 +11,57 @@ marked.use({
   pedantic: false,
 });
 
-export async function sendMessage(userMessage: string): Promise<string> {
+interface ChatHistoryResponse {
+  id: number;
+  userId: string;
+  role: string;
+  message: string;
+  timestamp: string;
+}
+
+export async function saveChatMessage(message: string, role: string, token: string): Promise<void> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/save`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: new URLSearchParams({
+      message: message,
+      role: role,
+  }),
+
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to save chat message');
+  }
+}
+
+export async function getChatHistory(token: string): Promise<ChatHistoryResponse[]> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/history`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch chat history');
+  }
+
+  return response.json();
+}
+
+export async function sendMessage(userMessage: string, token: string): Promise<string> {
   const response = await fetch(
-    `http://localhost:8080/chat?userMessage=${encodeURIComponent(userMessage)}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/chat/message?userMessage=${encodeURIComponent(userMessage)}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
     }
   );

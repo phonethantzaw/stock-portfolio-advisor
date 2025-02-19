@@ -1,43 +1,64 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-
+import { useAuth } from "@/components/auth";
 import { Button } from "../components/ui/button";
 import { Send, ArrowUp, CircleArrowDown } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { TextShimmer } from "../components/ui/text-shimmer";
-import { sendMessage } from "./actions";
+import { sendMessage, saveChatMessage, getChatHistory } from "./actions";
+
+interface Message {
+  user: string;
+  html: string;
+  time: string;
+}
 
 function ChatHome() {
+  const { token, isAuthenticated } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // Dummy data for testing
-// const dummyData = [
-//   { user: "You", html: "What are some good tech stocks to invest in?", time: "2:30 PM" },
-//   { user: "Stock Advisor", html: "Based on current market analysis, here are some promising tech stocks:<br/><br/>1. AAPL (Apple) - Strong fundamentals and consistent growth<br/>2. MSFT (Microsoft) - Cloud services expansion and AI initiatives<br/>3. GOOGL (Alphabet) - Digital advertising dominance and AI developments<br/>4. NVDA (NVIDIA) - Leading in AI and gaming chips", time: "2:31 PM" },
-//   { user: "You", html: "What's the outlook for NVIDIA?", time: "2:32 PM" },
-//   { user: "Stock Advisor", html: "NVIDIA (NVDA) has a strong positive outlook due to:<br/><br/>• Dominant position in AI chips market<br/>• Growing demand in data centers<br/>• Gaming sector recovery<br/>• New AI product launches<br/><br/>However, consider the high valuation and market volatility.", time: "2:33 PM" },
-//   { user: "You", html: "Should I invest in AI-focused ETFs?", time: "2:34 PM" },
-//   { user: "Stock Advisor", html: "AI-focused ETFs can be a good investment strategy. Consider:<br/><br/>1. ROBO - Robotics & Automation ETF<br/>2. AIQ - Global X Artificial Intelligence ETF<br/>3. BOTZ - Global X Robotics & AI ETF<br/><br/>These provide diversified exposure to AI technology.", time: "2:35 PM" },
-//   { user: "You", html: "What's your take on cryptocurrency investments?", time: "2:36 PM" },
-//   { user: "Stock Advisor", html: "Cryptocurrency investments carry high risk:<br/><br/>Pros:<br/>• High potential returns<br/>• Portfolio diversification<br/>• Growing institutional adoption<br/><br/>Cons:<br/>• High volatility<br/>• Regulatory uncertainty<br/>• Security risks<br/><br/>Consider limiting crypto to 5-10% of your portfolio.", time: "2:37 PM" },
-//   { user: "You", html: "How should I diversify my portfolio?", time: "2:38 PM" },
-//   { user: "Stock Advisor", html: "A well-diversified portfolio might include:<br/><br/>• 40% Large-cap stocks<br/>• 15% Mid-cap stocks<br/>• 10% Small-cap stocks<br/>• 20% International stocks<br/>• 10% Bonds<br/>• 5% Real estate/REITs<br/><br/>Adjust based on your risk tolerance and goals.", time: "2:39 PM" },
-//   { user: "You", html: "What are some good dividend stocks?", time: "2:40 PM" },
-//   { user: "Stock Advisor", html: "Here are some reliable dividend stocks:<br/><br/>1. JNJ (Johnson & Johnson) - Healthcare<br/>2. PG (Procter & Gamble) - Consumer goods<br/>3. KO (Coca-Cola) - Beverages<br/>4. VZ (Verizon) - Telecommunications<br/><br/>All have consistent dividend growth history.", time: "2:41 PM" },
-//   { user: "You", html: "How do I analyze a stock's fundamentals?", time: "2:42 PM" },
-//   { user: "Stock Advisor", html: "Key fundamental analysis metrics:<br/><br/>1. P/E Ratio - Price to Earnings<br/>2. EPS Growth - Earnings Per Share Growth<br/>3. Debt-to-Equity Ratio<br/>4. ROE - Return on Equity<br/>5. Profit Margins<br/>6. Cash Flow<br/><br/>Also consider industry trends and competitive position.", time: "2:43 PM" },
-//   { user: "You", html: "What's a good investment strategy for beginners?", time: "2:44 PM" },
-//   { user: "Stock Advisor", html: "For beginners, consider:<br/><br/>1. Start with index funds (S&P 500)<br/>2. Use dollar-cost averaging<br/>3. Reinvest dividends<br/>4. Keep emergency fund separate<br/>5. Focus on long-term growth<br/>6. Learn before expanding to individual stocks<br/><br/>Remember: diversification reduces risk.", time: "2:45 PM" },
-//   { user: "You", html: "Tell me about ESG investing", time: "2:46 PM" },
-//   { user: "Stock Advisor", html: "ESG (Environmental, Social, Governance) investing focuses on:<br/><br/>Environmental:<br/>• Climate change impact<br/>• Resource usage<br/>• Pollution<br/><br/>Social:<br/>• Employee relations<br/>• Community impact<br/>• Human rights<br/><br/>Governance:<br/>• Board diversity<br/>• Corporate ethics<br/>• Shareholder rights", time: "2:47 PM" },
-//   { user: "You", html: "What are some common investing mistakes to avoid?", time: "2:48 PM" },
-//   { user: "Stock Advisor", html: "Common investing mistakes:<br/><br/>1. Timing the market<br/>2. Emotional trading<br/>3. Lack of diversification<br/>4. Ignoring fees<br/>5. Not having a plan<br/>6. Chasing past performance<br/>7. Neglecting research<br/>8. Investing emergency funds<br/><br/>Stay disciplined and focused on long-term goals.", time: "2:49 PM" },
-//   { user: "You", html: "How often should I rebalance my portfolio?", time: "2:50 PM" },
-//   { user: "Stock Advisor", html: "Portfolio rebalancing guidelines:<br/><br/>• Annually is standard<br/>• Consider rebalancing when allocations drift 5-10%<br/>• Review quarterly for major market changes<br/>• Tax implications should be considered<br/>• Use new contributions to rebalance when possible<br/><br/>Keep transaction costs in mind.", time: "2:51 PM" }
-// ];
+  // Load chat history when component mounts
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (isAuthenticated && token) {
+        try {
+          const history = await getChatHistory(token);
+          const formattedHistory = history.map(msg => ({
+            user: msg.role === 'user' ? 'You' : 'Stock Advisor',
+            html: msg.message,
+            time: new Date(msg.timestamp).toLocaleTimeString()
+          }));
+          setMessages(formattedHistory.reverse());
+        } catch (error) {
+          console.error('Error loading chat history:', error);
+        }
+      }
+    };
+
+    loadChatHistory();
+  }, [isAuthenticated, token]);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const inputLength = input.trim().length;
+
+  // Auto-scroll when messages change or loading state changes
+  useEffect(() => {
+    const scrollableArea = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
+    if (scrollableArea) {
+      const scrollHeight = scrollableArea.scrollHeight;
+      scrollableArea.scrollTo({
+        top: scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages, isLoading]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const viewport = event.target as HTMLDivElement;
@@ -57,58 +78,65 @@ function ChatHome() {
       }
     }
   };
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<
-    { user: string; html: string; time: string }[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const inputLength = input.trim().length;
-
-  // Auto-scroll when messages change or loading state changes
-  useEffect(() => {
-    const scrollableArea = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
-    if (scrollableArea) {
-      const scrollHeight = scrollableArea.scrollHeight;
-      scrollableArea.scrollTo({
-        top: scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [messages, isLoading]);
 
   const handleSendMessage = async () => {
+    if (!input.trim()) return;
+    
     const time = new Date().toLocaleTimeString();
     const userMessage = { user: "You", html: input, time };
     
-    // Immediately show user's message
-    setMessages((prevMessages) => [userMessage, ...prevMessages]);
-    setInput(""); // Clear input right away
-    
     try {
-      setIsLoading(true);
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      const html = await sendMessage(input);
+      // Check authentication before showing user message
+      if (!isAuthReady) {
+        throw new Error("Authentication is still initializing. Please wait...");
+      }
 
-      // Dummy response
-      // const html = "Thank you for your question. This is a dummy response. In a real implementation, this would come from the API.";
+      if (!isAuthenticated) {
+        throw new Error("You need to log in to send messages.");
+      }
+
+      if (!token) {
+        // Try to refresh the page to get a new token
+        window.location.reload();
+        throw new Error("Session expired. Refreshing the page...");
+      }
+
+      // Only show user message if auth checks pass
+      setMessages((prevMessages) => [userMessage, ...prevMessages]);
+      setInput(""); // Clear input right away
+
+      // Save user message to history
+      await saveChatMessage(input, "user", token);
+
+      setIsLoading(true);
+      const html = await sendMessage(input, token);
       
+      // Save assistant's response to history
+      await saveChatMessage(html, "assistant", token);
+
       // Add bot's response
       setMessages((prevMessages) => [
         { user: "Stock Advisor", html, time: new Date().toLocaleTimeString() },
         ...prevMessages,
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
-      // Optionally show error message in chat
+      // Show a more specific error message
       setMessages((prevMessages) => [
         { 
           user: "Stock Advisor", 
-          html: "Sorry, I encountered an error while processing your request. Please try again.", 
+          html: error.message || "Sorry, I encountered an error while processing your request. Please try again.", 
           time: new Date().toLocaleTimeString() 
         },
         ...prevMessages,
       ]);
+
+      // If token is missing, trigger a page reload after a short delay
+      if (error.message.includes("Session expired")) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +147,54 @@ function ChatHome() {
       handleSendMessage();
     }
   };
+
+  // Handle authentication state
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // Wait a bit to ensure Keycloak is properly initialized
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (isAuthenticated !== null) {
+          setIsAuthReady(true);
+          setAuthError(null);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        setAuthError('Failed to initialize authentication');
+      }
+    };
+
+    initAuth();
+  }, [isAuthenticated]);
+
+  // Show loading state while authentication is initializing
+  if (!isAuthReady) {
+    return (
+      <div className="container mx-auto max-w-4xl h-[80vh] flex items-center justify-center flex-col gap-4">
+        <TextShimmer>Initializing chat...</TextShimmer>
+        {authError && (
+          <p className="text-sm text-destructive">{authError}</p>
+        )}
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto max-w-4xl h-[80vh] flex items-center justify-center flex-col gap-4">
+        <TextShimmer>Please log in to continue...</TextShimmer>
+        <Button
+          onClick={() => window.location.reload()}
+          variant="outline"
+          size="sm"
+        >
+          Refresh Page
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-4xl h-[80vh] flex flex-col">
@@ -152,7 +228,7 @@ function ChatHome() {
                         Stock Advisor • <span className="text-xs opacity-70">{new Date().toLocaleTimeString()}</span>
                       </div>
                       <TextShimmer className="font-mono text-sm" duration={1}>
-                        thinking...
+                        processing...
                       </TextShimmer>
                     </div>
                   </div>

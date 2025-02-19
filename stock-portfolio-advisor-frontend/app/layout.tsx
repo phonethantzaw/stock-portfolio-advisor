@@ -1,51 +1,74 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { cn } from "@/lib/utils";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/components/providers";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { AuthProvider } from "@/components/auth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
+  display: "swap",
+  preload: true,
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
   title: "Stock Advisor",
-  description: "Stock Advisor",
+  description: "Your personal AI-powered stock portfolio advisor",
+  keywords: ["stock", "portfolio", "advisor", "investment", "AI", "finance"],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1
+  }
 };
 
-export default function RootLayout({
+function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col px-4 py-2 min-h-screen border-b`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          'antialiased',
+          'flex flex-col',
+          'min-h-screen',
+          'px-4 py-2',
+          'bg-background text-foreground'
+        )}
+        suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Header />
-          <main>
-            <div className="flex w-full">
-              <main className="grow py-3 min-w-full min-h-full">{children}</main>
+        <Providers>
+          <AuthProvider>
+            <div className="relative flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1 py-3">{children}</main>
+              <Footer />
             </div>
-          </main>
-          <Footer />
-        </ThemeProvider>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
 }
+
+
+
+
+
+export default RootLayout;

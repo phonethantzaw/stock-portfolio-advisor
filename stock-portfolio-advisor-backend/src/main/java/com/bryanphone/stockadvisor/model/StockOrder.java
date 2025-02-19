@@ -1,21 +1,42 @@
 package com.bryanphone.stockadvisor.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Table("stock_orders")
-public record StockOrder (
-        @Id Long id,
-        @Column("user_id") String userId,
-        String symbol,
-        Integer quantity,
-        BigDecimal price,
-        @Column("order_type") OrderType orderType,
-        @Column("created_at") LocalDateTime createdAt
-) {}
+
+@Entity(name = "stock_orders")
+@Getter
+@Setter
+public class StockOrder{
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        @Column(name = "user_id")
+        private String userId;
+        private String symbol;
+        private Integer quantity;
+        private BigDecimal price;
+        @Column(name = "order_type")
+        private OrderType orderType;
+        @Column(name = "created_at")
+        private LocalDateTime createdAt;
+
+        public StockOrder() {
+        }
+
+        public StockOrder(String userId, String symbol, Integer quantity, BigDecimal price, OrderType orderType) {
+                this.userId = userId;
+                this.symbol = symbol;
+                this.quantity = quantity;
+                this.price = price;
+                this.orderType = orderType;
+                this.createdAt = LocalDateTime.now();
+        }
+}
 
 
