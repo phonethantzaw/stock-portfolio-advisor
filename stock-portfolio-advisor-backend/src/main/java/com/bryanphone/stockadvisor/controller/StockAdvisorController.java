@@ -1,11 +1,12 @@
 package com.bryanphone.stockadvisor.controller;
 
 import com.bryanphone.stockadvisor.assistant.StockAdvisorAssistant;
-import com.bryanphone.stockadvisor.model.ChatHistory;
 import com.bryanphone.stockadvisor.model.ChatHistoryResponse;
+import com.bryanphone.stockadvisor.model.ErrorResponse;
 import com.bryanphone.stockadvisor.service.ChatHistoryService;
-import com.bryanphone.stockadvisor.service.StockOrderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bryanphone.stockadvisor.service.RateLimitService;
+import com.bryanphone.stockadvisor.utils.JwtUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,24 +17,33 @@ import java.util.List;
 public class StockAdvisorController {
 
     private final StockAdvisorAssistant assistant;
+    private final ChatHistoryService chatHistoryService;
+    private final RateLimitService rateLimitService;
 
-    @Autowired
-    private ChatHistoryService chatHistoryService;
-
-    @Autowired
-    private StockOrderService stockOrderService;
-
-    public StockAdvisorController(StockAdvisorAssistant assistant) {
+    public StockAdvisorController(StockAdvisorAssistant assistant, ChatHistoryService chatHistoryService, RateLimitService rateLimitService) {
         this.assistant = assistant;
+        this.chatHistoryService = chatHistoryService;
+        this.rateLimitService = rateLimitService;
     }
 
     @GetMapping("/message")
-    public String chat(String userMessage) {
-        return assistant.chat(userMessage);
+    public ResponseEntity<?> chat(String userMessage) {
+        String userId = JwtUtils.getUsernameFromJwt();
+        
+        // Check rate limit only once
+        if (!rateLimitService.allowRequest(userId, userMessage)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(new ErrorResponse("Daily request limit exceeded. Try again tomorrow."));
+        }
+        
+        return ResponseEntity.ok(assistant.chat(userMessage));
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Void> saveMessage(@RequestParam String message, @RequestParam String role) {
+    public ResponseEntity<?> saveMessage(@RequestParam String message, @RequestParam String role) {
+        String userId = JwtUtils.getUsernameFromJwt();
+        
+        // For save endpoint, we don't need to check rate limit
         chatHistoryService.saveChatHistory(message, role);
         return ResponseEntity.ok().build();
     }
@@ -44,5 +54,16 @@ public class StockAdvisorController {
         return ResponseEntity.ok(history);
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteChatHistoryById(@RequestParam Long id) {
+        chatHistoryService.deleteChatHistoryById(id);
+        return ResponseEntity.ok().build();
+    }
 
+    @GetMapping("/limit")
+    public ResponseEntity<Integer> getRemainingLimit() {
+        String userId = JwtUtils.getUsernameFromJwt();
+        int remaining = rateLimitService.getRemainingRequests(userId);
+        return ResponseEntity.ok(remaining);
+    }
 }

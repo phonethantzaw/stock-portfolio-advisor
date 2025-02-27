@@ -1,15 +1,13 @@
 package com.bryanphone.stockadvisor.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+
 @Entity(name = "chat_history")
+@Data
 public class ChatHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,4 +1,4 @@
 package com.bryanphone.stockadvisor.model;
 
-public record ChatHistoryResponse(String userId, String message, String role, String timestamp) {
+public record ChatHistoryResponse(Long id,String userId, String message, String role, String timestamp) {
 }

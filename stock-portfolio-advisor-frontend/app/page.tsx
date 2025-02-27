@@ -3,13 +3,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/components/auth";
 import { Button } from "../components/ui/button";
-import { Send, ArrowUp, CircleArrowDown } from "lucide-react";
+import { Send, ArrowUp, CircleArrowDown, Copy, Check, Trash2 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { TextShimmer } from "../components/ui/text-shimmer";
-import { sendMessage, saveChatMessage, getChatHistory } from "./actions";
+import { TypingAnimation, LoadingDots } from "../components/ui/typing-animation";
+import { sendMessage, saveChatMessage, getChatHistory, getRateLimit, deleteChatMessage } from "./actions";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
+  id?: number;
   user: string;
   html: string;
   time: string;
@@ -17,6 +20,7 @@ interface Message {
 
 function ChatHome() {
   const { token, isAuthenticated } = useAuth();
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -29,6 +33,7 @@ function ChatHome() {
         try {
           const history = await getChatHistory(token);
           const formattedHistory = history.map(msg => ({
+            id: msg.id,
             user: msg.role === 'user' ? 'You' : 'Stock Advisor',
             html: msg.message,
             time: new Date(msg.timestamp).toLocaleTimeString()
@@ -46,7 +51,24 @@ function ChatHome() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [remainingRequests, setRemainingRequests] = useState<number | null>(null);
   const inputLength = input.trim().length;
+
+  // Load rate limit on mount and after each message
+  const updateRateLimit = async () => {
+    if (isAuthenticated && token) {
+      try {
+        const limit = await getRateLimit(token);
+        setRemainingRequests(limit);
+      } catch (error) {
+        console.error('Error fetching rate limit:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    updateRateLimit();
+  }, [isAuthenticated, token]);
 
   // Auto-scroll when messages change or loading state changes
   useEffect(() => {
@@ -109,16 +131,25 @@ function ChatHome() {
       await saveChatMessage(input, "user", token);
 
       setIsLoading(true);
+      
+      // Add a small delay to make the loading animation visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const html = await sendMessage(input, token);
       
       // Save assistant's response to history
       await saveChatMessage(html, "assistant", token);
 
-      // Add bot's response
-      setMessages((prevMessages) => [
-        { user: "Stock Advisor", html, time: new Date().toLocaleTimeString() },
-        ...prevMessages,
-      ]);
+      // Add bot's response with a small delay for smoother transition
+      setTimeout(() => {
+        setMessages((prevMessages) => [
+          { user: "Stock Advisor", html, time: new Date().toLocaleTimeString() },
+          ...prevMessages,
+        ]);
+        
+        // Update rate limit after message
+        updateRateLimit();
+      }, 300);
     } catch (error: any) {
       console.error("Error sending message:", error);
       // Show a more specific error message
@@ -138,7 +169,9 @@ function ChatHome() {
         }, 2000);
       }
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300); // Small delay before removing loading indicator
     }
   };
 
@@ -210,7 +243,7 @@ function ChatHome() {
                 {showScrollTop && (
                   <div className="sticky bottom-0 left-0 right-0 flex justify-center py-4 bg-gradient-to-t from-background to-background/0">
                     <Button
-                      onClick={scrollToBottom}
+                      onClick={() => scrollToBottom(true)}
                       variant="secondary"
                       size="sm"
                       className="h-auto py-1.5 px-3 font-normal text-xs gap-1.5 bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors duration-200"
@@ -221,46 +254,145 @@ function ChatHome() {
                   </div>
                 )}
 
+                <AnimatePresence>
                 {isLoading && (
-                  <div className="flex flex-col items-start">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex flex-col items-start"
+                  >
                     <div className="max-w-[80%] rounded-lg p-3 bg-muted">
                       <div className="mb-1 text-sm font-semibold">
                         Stock Advisor • <span className="text-xs opacity-70">{new Date().toLocaleTimeString()}</span>
                       </div>
-                      <TextShimmer className="font-mono text-sm" duration={1}>
-                        processing...
-                      </TextShimmer>
+                      <div className="flex items-center space-x-2 font-mono text-sm">
+                        <TypingAnimation text="Processing" speed={150} loop={true} />
+                        <LoadingDots />
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {messages.map((message, index) => (
-                  <div
+                  <motion.div
                     key={index}
-                    className={`flex flex-col ${message.user === "You" ? "items-end" : "items-start"}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ 
+                      duration: 0.4, 
+                      delay: 0.1 * Math.min(index, 3), // Only delay the first few messages
+                      type: "spring",
+                      stiffness: 100
+                    }}
+                    className={`group flex flex-col ${message.user === "You" ? "items-end" : "items-start"}`}
                   >
-                    <div
-                      className={`max-w-[80%] rounded-lg p-3 ${message.user === "You"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"}`}
-                    >
-                      <div className="mb-1 text-sm font-semibold">
-                        {message.user} • <span className="text-xs opacity-70">{message.time}</span>
-                      </div>
-                      <div
-                        className="prose prose-sm dark:prose-invert overflow-x-auto max-w-none"
-                        dangerouslySetInnerHTML={{ __html: message.html }}
-                      />
+                    <div className="flex items-start gap-2">
+                      {message.user === "You" && (
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 hover:bg-background/20"
+                            onClick={() => {
+                              navigator.clipboard.writeText(message.html.replace(/<[^>]*>/g, ''));
+                              setCopiedIndex(index);
+                              setTimeout(() => setCopiedIndex(null), 2000);
+                            }}
+                          >
+                            {copiedIndex === index ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {message.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-background/20"
+                              onClick={async () => {
+                                try {
+                                  const messageId = message.id;
+                                  if (messageId === undefined) return;
+                                  await deleteChatMessage(messageId, token!);
+                                  setMessages(prevMessages => 
+                                    prevMessages.filter(msg => 
+                                      !(msg.id === messageId && msg.time === message.time)
+                                    )
+                                  );
+                                } catch (error) {
+                                  console.error('Error deleting message:', error);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      <motion.div
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.01 }}
+                        transition={{ duration: 0.2 }}
+                        className={`max-w-[80%] rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-300 ${message.user === "You"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"}`}
+                      >
+                        <div className="mb-1 text-sm font-semibold flex justify-between items-center">
+                          <div>
+                            {message.user} • <span className="text-xs opacity-70">{message.time}</span>
+                          </div>
+                        </div>
+                        <div
+                          className="prose prose-sm dark:prose-invert overflow-x-auto max-w-none"
+                          dangerouslySetInnerHTML={{ __html: message.html }}
+                        />
+                      </motion.div>
+                      {message.user !== "You" && (
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 hover:bg-background/20"
+                            onClick={() => {
+                              navigator.clipboard.writeText(message.html.replace(/<[^>]*>/g, ''));
+                              setCopiedIndex(index);
+                              setTimeout(() => setCopiedIndex(null), 2000);
+                            }}
+                          >
+                            {copiedIndex === index ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                </AnimatePresence>
               </div>
             </ScrollArea>
           </div>
         </div>
 
-        <div className="flex-none p-4 border-t">
-          <div className="flex gap-2" id="input">
+        <div className="flex-none border-t">
+           {remainingRequests !== null && (
+            <div className="text-center text-sm text-muted-foreground py-2 border-b">
+              Remaining requests today: {remainingRequests}
+            </div>
+          )} 
+          <motion.div 
+            className="flex gap-2 p-4" 
+            id="input"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -273,14 +405,19 @@ function ChatHome() {
               onClick={handleSendMessage}
               disabled={inputLength === 0 || isLoading}
               size="icon"
+              className="transition-all duration-300 relative overflow-hidden group"
             >
-              <Send className="h-4 w-4" />
+              <motion.div
+                initial={{ scale: 1 }}
+                whileTap={{ scale: 0.9 }}
+                className="absolute inset-0 bg-primary/10 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              />
+              <Send className="h-4 w-4 relative z-10" />
             </Button>
-          </div>
+          </motion.div>
         </div>
     </div>
   );
 }
-
 
 export default ChatHome;

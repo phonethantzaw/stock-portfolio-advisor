@@ -1,6 +1,7 @@
 package com.bryanphone.stockadvisor.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +11,7 @@ import java.time.LocalDateTime;
 
 
 @Entity(name = "stock_orders")
-@Getter
-@Setter
+@Data
 public class StockOrder{
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

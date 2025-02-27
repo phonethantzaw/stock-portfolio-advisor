@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,11 +25,7 @@ public class ChatHistoryService {
 
     public void saveChatHistory(String message, String role) {
         String userId = JwtUtils.getUsernameFromJwt();
-        log.info("Saving chat history for user: " + userId + "role: " + role + "message: " + message);
-
         byte[] compressedMessage = CompressionUtil.compress(message);
-        log.info("Compressed message: " + Arrays.toString(compressedMessage));
-
         // Create and save the ChatHistory entity
         ChatHistory chatHistory = new ChatHistory();
         chatHistory.setUserId(userId);
@@ -39,14 +34,12 @@ public class ChatHistoryService {
 
         chatHistoryRepository.save(chatHistory);
 
-}
+    }
 
 
     @Transactional
     public List<ChatHistoryResponse> getChatHistory() {
         String userId = JwtUtils.getUsernameFromJwt();
-        log.info("Retrieving chat history for user: " + userId);
-
         List<ChatHistory> chList = chatHistoryRepository.findByUserIdOrderByTimestampAsc(userId);
 
         return chList.stream()
@@ -61,11 +54,16 @@ public class ChatHistoryService {
         String formattedTimestamp = chatHistory.getTimestamp().format(formatter);
 
         return new ChatHistoryResponse(
+                chatHistory.getId(),
                 chatHistory.getUserId(),
                 decompressedMessage,
                 chatHistory.getRole(),
                 formattedTimestamp
         );
+    }
+
+    public void deleteChatHistoryById(Long id) {
+        chatHistoryRepository.deleteById(id);
     }
 
 

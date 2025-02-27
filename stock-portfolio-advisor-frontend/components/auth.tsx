@@ -11,8 +11,6 @@ import {
   useState,
 } from "react";
 
-
-
 // Define the shape of the user object
 interface User {
   // Add the properties you expect from the user info response
@@ -90,9 +88,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Set up token refresh
       if (authenticated) {
         setInterval(() => {
-          keycloak.updateToken(70).catch(() => {
-            console.error('Failed to refresh token');
-          });
+          if (keycloak && keycloak.token) {
+            keycloak.updateToken(70).catch(() => {
+              console.error('Failed to refresh token');
+            });
+          }
         }, 60000);
       }
     } catch (error) {

@@ -25,7 +25,6 @@ public class CompressionUtil {
             outputStream.write(buffer, 0, count);
         }
         deflater.end();
-        log.info("Compressed data from " + data.length() + " to " + outputStream.size() + " bytes");
 
         return outputStream.toByteArray();
     }
@@ -51,8 +50,6 @@ public class CompressionUtil {
         } finally {
             inflater.end();
         }
-
-        log.info("Decompressed data from " + compressedData.length + " to " + outputStream.size() + " bytes");
 
         return outputStream.toString();
     }

@@ -5,10 +5,7 @@ import { marked } from "marked";
 // Configure marked to use GFM (GitHub Flavored Markdown)
 marked.use({
   gfm: true,
-  breaks: true,
-  mangle: false,
-  headerIds: false,
-  pedantic: false,
+  breaks: true
 });
 
 interface ChatHistoryResponse {
@@ -19,11 +16,31 @@ interface ChatHistoryResponse {
   timestamp: string;
 }
 
+interface ErrorResponse {
+  message: string;
+}
+
+
+export async function deleteChatMessage(id: number, token: string): Promise<void> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/delete?id=${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete chat message');
+  }
+}
+
 export async function saveChatMessage(message: string, role: string, token: string): Promise<void> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/save`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
       'Authorization': `Bearer ${token}`,
     },
     body: new URLSearchParams({
@@ -34,8 +51,29 @@ export async function saveChatMessage(message: string, role: string, token: stri
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      const error: ErrorResponse = await response.json();
+      throw new Error(error.message);
+    }
+
     throw new Error('Failed to save chat message');
   }
+}
+
+export async function getRateLimit(token: string): Promise<number> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/limit`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch rate limit');
+  }
+
+  return response.json();
 }
 
 export async function getChatHistory(token: string): Promise<ChatHistoryResponse[]> {
@@ -67,12 +105,17 @@ export async function sendMessage(userMessage: string, token: string): Promise<s
   );
 
   if (!response.ok) {
+    if (response.status === 429) {
+      const error: ErrorResponse = await response.json();
+      throw new Error(error.message);
+    }
     throw new Error("Network response was not ok");
   }
 
   const markdown = await response.text();
   // Add custom table styles
-  const html = marked(markdown)
+  const rawHtml = await marked(markdown);
+  const html = rawHtml
     .replace(
       /<table>/g,
       '<table class="min-w-full border-collapse my-4 bg-muted/50 rounded overflow-hidden"'
