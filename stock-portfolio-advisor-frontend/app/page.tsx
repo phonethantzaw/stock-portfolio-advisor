@@ -29,7 +29,7 @@ function ChatHome() {
   // Load chat history when component mounts
   useEffect(() => {
     const loadChatHistory = async () => {
-      if (isAuthenticated && token) {
+      if (typeof window !== 'undefined' && isAuthenticated && token) {
         try {
           const history = await getChatHistory(token);
           const formattedHistory = history.map(msg => ({
@@ -45,7 +45,9 @@ function ChatHome() {
       }
     };
 
-    loadChatHistory();
+    if (typeof window !== 'undefined') {
+      loadChatHistory();
+    }
   }, [isAuthenticated, token]);
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -56,7 +58,7 @@ function ChatHome() {
 
   // Load rate limit on mount and after each message
   const updateRateLimit = async () => {
-    if (isAuthenticated && token) {
+    if (typeof window !== 'undefined' && isAuthenticated && token) {
       try {
         const limit = await getRateLimit(token);
         setRemainingRequests(limit);
@@ -67,7 +69,9 @@ function ChatHome() {
   };
 
   useEffect(() => {
-    updateRateLimit();
+    if (typeof window !== 'undefined') {
+      updateRateLimit();
+    }
   }, [isAuthenticated, token]);
 
   // Auto-scroll when messages change or loading state changes
