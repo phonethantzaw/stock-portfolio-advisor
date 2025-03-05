@@ -6,17 +6,26 @@ out/
 
 # Maven
 target/
+!target/stock-advisor-api-0.0.1.jar
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+.mvn/
 
 # Logs
 *.log
+logs/
+spring.log
 
 # OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Bytecode
@@ -24,13 +33,26 @@ Thumbs.db
 
 # Generated files
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 
 # Spring Boot
-spring.log
+.spring.log
+application-local.properties
+application-local.yml
+
+# Environment files
+.env
+*.env
+.env.*
+
+# Docker
+.docker/
+*.env.docker
 
 # Temporary files
 *.tmp
 *.temp
 *.swp
+*~

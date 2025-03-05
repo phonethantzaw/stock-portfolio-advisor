@@ -1,0 +1,41 @@
+# Maven build directory
+target/
+!target/stock-advisor-api-0.0.1.jar
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.eclipse/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+*.env
+.env.*
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+
+# Test files
+**/test/
+**/tests/
+**/testdata/
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# System files
+.DS_Store
+Thumbs.db

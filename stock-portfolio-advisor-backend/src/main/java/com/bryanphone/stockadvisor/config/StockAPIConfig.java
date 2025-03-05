@@ -9,14 +9,19 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class StockAPIConfig {
 
+
+    private @Value("${stock.api.url}") String apiUrl;
+
+    private @Value("${stock.api.key}") String apiKey;
+
+
     @Bean
     public RestClient restClient() {
         return RestClient.builder()
-                .baseUrl("https://financialmodelingprep.com/api/v3")
+                .baseUrl(apiUrl)
                 .build();
     }
 
-    private @Value("${stock.api.key}") String apiKey;
 
     public String getApiKey() {
         return apiKey;
