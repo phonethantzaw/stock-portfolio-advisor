@@ -2,6 +2,15 @@
 
 import { marked } from "marked";
 
+const getApiUrl = () => {
+  if (typeof window === 'undefined') {
+    // Server-side
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // Client-side
+  return '';
+};
+
 // Configure marked to use GFM (GitHub Flavored Markdown)
 marked.use({
   gfm: true,
@@ -22,7 +31,7 @@ interface ErrorResponse {
 
 
 export async function deleteChatMessage(id: number, token: string): Promise<void> {
-  const response = await fetch(`/api/chat/delete?id=${id}`, {
+  const response = await fetch(`${getApiUrl()}/api/chat/delete?id=${id}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +46,7 @@ export async function deleteChatMessage(id: number, token: string): Promise<void
 }
 
 export async function saveChatMessage(message: string, role: string, token: string): Promise<void> {
-  const response = await fetch(`/api/chat/save`, {
+  const response = await fetch(`${getApiUrl()}/api/chat/save`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -61,7 +70,7 @@ export async function saveChatMessage(message: string, role: string, token: stri
 }
 
 export async function getRateLimit(token: string): Promise<number> {
-  const response = await fetch(`/api/chat/limit`, {
+  const response = await fetch(`${getApiUrl()}/api/chat/limit`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -77,7 +86,7 @@ export async function getRateLimit(token: string): Promise<number> {
 }
 
 export async function getChatHistory(token: string): Promise<ChatHistoryResponse[]> {
-  const response = await fetch(`/api/chat/history`, {
+  const response = await fetch(`${getApiUrl()}/api/chat/history`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -94,7 +103,7 @@ export async function getChatHistory(token: string): Promise<ChatHistoryResponse
 
 export async function sendMessage(userMessage: string, token: string): Promise<string> {
   const response = await fetch(
-    `/api/chat/message?userMessage=${encodeURIComponent(userMessage)}`,
+    `${getApiUrl()}/api/chat/message?userMessage=${encodeURIComponent(userMessage)}`,
     {
       method: "GET",
       headers: {
