@@ -19,9 +19,6 @@ public class ApplicationAuditAware implements AuditorAware<String> {
             return Optional.empty();
         }
 
-
-
-
         return Optional.ofNullable(authentication.getName());
     }
 }
