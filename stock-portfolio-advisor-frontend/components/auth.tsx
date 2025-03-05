@@ -73,7 +73,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         onLoad: "login-required",
         checkLoginIframe: false,
         pkceMethod: 'S256',
-        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+        enableLogging: true,
+        silentCheckSsoFallback: false
       });
       
       setKeycloakInitialized(true);

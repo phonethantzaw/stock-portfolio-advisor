@@ -8,7 +8,7 @@ import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { TextShimmer } from "../components/ui/text-shimmer";
 import { TypingAnimation, LoadingDots } from "../components/ui/typing-animation";
-import { sendMessage, saveChatMessage, getChatHistory, getRateLimit, deleteChatMessage } from "./actions";
+import { sendMessage, saveChatMessage, getChatHistory, getRateLimit ,deleteChatMessage } from "./actions"; 
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -381,11 +381,11 @@ function ChatHome() {
         </div>
 
         <div className="flex-none border-t">
-           {remainingRequests !== null && (
+            {remainingRequests !== null && (
             <div className="text-center text-sm text-muted-foreground py-2 border-b">
               Remaining requests today: {remainingRequests}
             </div>
-          )} 
+          )}  
           <motion.div 
             className="flex gap-2 p-4" 
             id="input"

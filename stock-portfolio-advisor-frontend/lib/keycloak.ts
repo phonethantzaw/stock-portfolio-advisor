@@ -12,6 +12,12 @@ class KeycloakInstance {
       const url = process.env.NEXT_PUBLIC_KEYCLOAK_URL || '';
       const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || '';
       const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || '';
+
+      console.log('Keycloak config:', {
+        url,
+        realm,
+        clientId,
+      });
       
       this.instance = new Keycloak({
         url,
