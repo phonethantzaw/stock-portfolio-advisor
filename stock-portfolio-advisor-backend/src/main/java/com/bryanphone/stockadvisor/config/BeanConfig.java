@@ -32,19 +32,7 @@ public class BeanConfig {
         logger.info("CorsFilter frontendUrl: {}", frontendUrl);
         // Allow both the configured frontend URL and the specific domain
         config.addAllowedOrigin(frontendUrl);
-        
-//        // Also add the configured frontend URL if it's different
-//        if (frontendUrl != null && !frontendUrl.isEmpty() &&
-//            !frontendUrl.equals("https://stockadvisor.phonethantzaw.cloud")) {
-//            config.addAllowedOrigin(frontendUrl);
-//        }
-
-
-        
-        // Add all common headers
         config.addAllowedHeader("*");
-        
-        // Add all common methods including OPTIONS for preflight requests
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");

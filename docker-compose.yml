@@ -12,7 +12,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - spring-demo
+      - stock-network
     restart: unless-stopped
     
   keycloak:
@@ -23,13 +23,50 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: realm-sd-export.json
+    volumes:
+      - ./realm-sd-export.json:/opt/keycloak/data/import/realm.json
     networks:
-      - spring-demo
+      - stock-network
     command:
-      - "start-dev"
+      - start-dev
+      - --import-realm
+
+  frontend:
+    container_name: stock-advisor-frontend
+    build:
+      context: ./stock-portfolio-advisor-frontend
+      dockerfile: Dockerfile
+    image: stock-ad-fr
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - stock-network
+    depends_on:
+      - keycloak
+
+  backend:
+    container_name: stock-advisor-backend
+    build:
+      context: ./stock-portfolio-advisor-backend
+      dockerfile: Dockerfile
+    image: stock-ad-bk
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ./stock-portfolio-advisor-backend/.env
+    networks:
+      - stock-network
+    depends_on:
+      - postgres
+      - keycloak
 
 networks:
-  spring-demo:
+  stock-network:
     driver: bridge
 
 volumes:
@@ -37,5 +74,7 @@ volumes:
     driver: local
   keycloak:
     driver: local
-  mongodb:
+  frontend:
+    driver: local
+  backend:
     driver: local

@@ -41,8 +41,6 @@ public class StockAdvisorController {
 
     @PostMapping("/save")
     public ResponseEntity<?> saveMessage(@RequestParam String message, @RequestParam String role) {
-        String userId = JwtUtils.getUsernameFromJwt();
-        
         // For save endpoint, we don't need to check rate limit
         chatHistoryService.saveChatHistory(message, role);
         return ResponseEntity.ok().build();
