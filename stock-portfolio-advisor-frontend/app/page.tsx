@@ -234,7 +234,7 @@ function ChatHome() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl h-[80vh] flex flex-col">
+    <div className="container mx-auto max-w-7xl h-[80vh] flex flex-col">
         <div className="flex-1 overflow-hidden p-4">
           <div className="relative h-full">
             <ScrollArea 
