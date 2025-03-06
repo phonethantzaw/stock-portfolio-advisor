@@ -23,15 +23,16 @@ const geistMono = localFont({
   preload: true,
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1
+};
+
 export const metadata: Metadata = {
   title: "Stock Advisor",
   description: "Your personal AI-powered stock portfolio advisor",
-  keywords: ["stock", "portfolio", "advisor", "investment", "AI", "finance"],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1
-  }
+  keywords: ["stock", "portfolio", "advisor", "investment", "AI", "finance"]
 };
 
 function RootLayout({
