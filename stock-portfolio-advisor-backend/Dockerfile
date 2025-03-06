@@ -17,7 +17,7 @@ USER spring:spring
 COPY --from=build /app/target/stock-advisor-api-0.0.1.jar app.jar
 
 # Environment variables
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=dev
 
 
 # Port
