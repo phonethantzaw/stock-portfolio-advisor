@@ -16,16 +16,15 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+# ENV NEXT_TELEMETRY_DISABLED 1
+# ENV NODE_ENV development
 
-ENV NEXT_PUBLIC_KEYCLOAK_URL=https://keycloak.phonethantzaw.cloud
+ENV NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:9090
 ENV NEXT_PUBLIC_KEYCLOAK_REALM=stock-advisor
 ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=sa
-ENV NEXT_PUBLIC_API_URL=https://stock-api.phonethantzaw.cloud
+ENV NEXT_PUBLIC_API_URL=http://localhost:8080
 ENV NEXT_PUBLIC_COOKIE_PREFIX=sa_
 ENV NEXT_PUBLIC_SESSION_COOKIE_NAME=sa_session
-
 
 
 # Build the application

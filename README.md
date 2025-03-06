@@ -1,86 +1,131 @@
-# Stock Portfolio Advisor
+# 📈 Stock Portfolio Advisor
 
-A modern web application that helps users manage and optimize their stock portfolios with intelligent insights and recommendations.
+A modern web application that helps users manage and optimize their stock portfolios with AI-powered insights and recommendations.
 
-## Project Overview
+## 🌟 Features
 
-The Stock Portfolio Advisor is a full-stack application built with:
+### Frontend
+- 📊 Real-time stock market data visualization
+- 🤖 AI-powered stock analysis and recommendations
+- 💼 Portfolio management and tracking
+- 🌓 Dark/Light mode support
+- 📱 Responsive design for all devices
+
+### Backend
+- 🔒 Secure OAuth2/OpenID Connect authentication
+- 📡 RESTful API endpoints
+- 🗄️ PostgreSQL database integration
+- 📊 Real-time data processing
+- 🔄 Automated portfolio rebalancing
+
+## 🛠️ Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 14.2
-- **UI Components**: Shadcn UI with Radix UI primitives
+- **UI**: Shadcn UI with Radix UI primitives
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript/React 18
 - **Authentication**: Keycloak integration
 
 ### Backend
 - **Framework**: Spring Boot 3.4.2
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL 16
 - **Language**: Java 17
 - **Build Tool**: Maven
 - **Security**: OAuth2/OpenID Connect with Keycloak
 
 ### Infrastructure
-- **Authentication Server**: Keycloak 24.0.2
+- **Authentication**: Keycloak 24.0.2
 - **Database**: PostgreSQL 16
-- **Container Platform**: Docker
-- **Service Orchestration**: Docker Compose
+- **Platform**: Docker & Docker Compose
 
-## Features
-
-- Modern, responsive user interface
-- Real-time stock portfolio management
-- Data visualization and analytics
-- Secure authentication with Keycloak
-- RESTful API integration
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Docker Desktop (latest version)
 - Docker Compose
 
-No need to install Node.js, Java, or PostgreSQL locally as everything runs in containers!
+No need to install Node.js, Java, or PostgreSQL locally - everything runs in containers! 🐳
 
-### Environment Setup
+### 📋 Quick Start
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/stock-portfolio-advisor.git
+   git clone https://github.com/phonethantzaw/stock-portfolio-advisor.git
    cd stock-portfolio-advisor
    ```
 
-2. Create necessary .env files:
-   - Backend `.env`:
+2. Obtain required API keys:
+   - **OpenAI API Key**: 
+     - Visit [OpenAI Platform](https://platform.openai.com/api-keys)
+     - Sign up or log in to your account
+     - Navigate to API keys section and create a new secret key
+     - Copy the key (you won't be able to see it again)
+   
+   - **Stock API Key**: 
+     - Visit [Financial Modeling Prep](https://site.financialmodelingprep.com/)
+     - Sign up for an account
+     - Navigate to your dashboard to find your API key
+     - Free tier provides limited API calls, consider a paid plan for production use
+
+3. Set up environment variables:
+   - **Backend**: Copy the example environment file
+     ```bash
+     cp stock-portfolio-advisor-backend/.env.example stock-portfolio-advisor-backend/.env
      ```
-     SPRING_PROFILES_ACTIVE=dev
+     Backend `.env` contains:
+     ```
+     OPENAI_API_KEY=your_openai_api_key
+     STOCK_API_KEY=your_stock_api_key
      JWT_ISSUER_URI=http://keycloak:8080/realms/stock-advisor
+     POSTGRES_URL=jdbc:postgresql://postgres:5432/stock_advisor
+     POSTGRES_USER=admin
+     POSTGRES_PASSWORD=password
+     STOCK_API_URL=https://financialmodelingprep.com/api/v3
+     FRONTEND_URL=http://frontend:3000
+     ```
+   
+   - **Frontend**: Copy the example environment file
+     ```bash
+     cp stock-portfolio-advisor-frontend/.env.example stock-portfolio-advisor-frontend/.env
+     ```
+     Frontend `.env` contains:
+     ```
+     # Keycloak Configuration
+     NEXT_PUBLIC_KEYCLOAK_URL=http://keycloak:8080
+     NEXT_PUBLIC_KEYCLOAK_REALM=stock-advisor
+     NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=sa
+     
+     # API Configuration
+     NEXT_PUBLIC_API_URL=http://backend:8080
      ```
 
-### Running the Application
-
-1. Start all services using Docker Compose:
+4. Start all services:
    ```bash
    docker compose up --build
    ```
 
-2. Access the services:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8080
-   - Keycloak Admin: http://localhost:9090
-   - PostgreSQL: localhost:5432
+### 🌐 Access Services
 
-### Development Commands
+- Frontend UI: http://localhost:3000
+- Backend API: http://localhost:8080
+- Keycloak Admin: http://localhost:9090 (admin/admin)
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- API Docs: http://localhost:8080/v3/api-docs
+
+## 🛠️ Development
+
+### Docker Commands
 
 ```bash
-# Start services in detached mode
+# Start all services in background
 docker compose up -d
 
-# View logs
+# View all logs
 docker compose logs
 
-# View logs for specific service
+# View service-specific logs
 docker compose logs frontend
 docker compose logs backend
 
@@ -91,31 +136,55 @@ docker compose down
 docker compose up --build frontend
 ```
 
-### Service Architecture
+### 🏗️ Project Structure
 
-1. **Frontend (port 3000)**
+```
+stock-portfolio-advisor/
+├── stock-portfolio-advisor-frontend/   # Next.js frontend
+├── stock-portfolio-advisor-backend/    # Spring Boot backend
+├── docker-compose.yml                  # Container orchestration
+├── realm-sd-export.json               # Keycloak realm config
+└── README.md                          # Project documentation
+```
+
+### 🔌 Service Architecture
+
+1. **Frontend (3000)**
    - Next.js application
-   - Communicates with backend API
-   - Authenticates via Keycloak
+   - Real-time data visualization
+   - Keycloak authentication
+   - Responsive UI components
 
-2. **Backend (port 8080)**
+2. **Backend (8080)**
    - Spring Boot REST API
-   - Connects to PostgreSQL
-   - Validates Keycloak tokens
+   - PostgreSQL integration
+   - Token validation
+   - Business logic
 
-3. **Keycloak (port 9090)**
-   - Handles authentication/authorization
-   - Pre-configured realm for the application
-   - Default admin credentials: admin/admin
+3. **Keycloak (9090)**
+   - User authentication
+   - Role-based access control
+   - OAuth2/OpenID Connect
+   - Pre-configured realm
 
-4. **PostgreSQL (port 5432)**
-   - Persistent data storage
-   - Automatically initialized with required schemas
+4. **PostgreSQL (5432)**
+   - User data
+   - Portfolio information
+   - Stock analytics
+   - Performance metrics
 
-## Contributing
+## 👥 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+Bryan Phone (@phonethantzaw)
