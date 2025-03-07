@@ -44,10 +44,15 @@ A modern web application that helps users manage and optimize their stock portfo
 
 ### Prerequisites
 
-- Docker Desktop (latest version)
-- Docker Compose
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (latest version)
+- Docker Compose (included with Docker Desktop)
 
 No need to install Node.js, Java, or PostgreSQL locally - everything runs in containers! 🐳
+
+Installation guides:
+- [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+- [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+- [Docker Desktop for Linux](https://docs.docker.com/desktop/install/linux-install/)
 
 ### 📋 Quick Start
 
