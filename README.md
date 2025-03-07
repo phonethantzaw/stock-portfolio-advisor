@@ -33,6 +33,7 @@ A modern web application that helps users manage and optimize their stock portfo
 - **Language**: Java 17
 - **Build Tool**: Maven
 - **Security**: OAuth2/OpenID Connect with Keycloak
+- **AI Integration**: LangChain4j with OpenAI
 
 ### Infrastructure
 - **Authentication**: Keycloak 24.0.2
