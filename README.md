@@ -111,6 +111,7 @@ No need to install Node.js, Java, or PostgreSQL locally - everything runs in con
 - Frontend UI: http://localhost:3000
 - Backend API: http://localhost:8080
 - Keycloak Admin: http://localhost:9090 (admin/admin)
+  - Once deployed, go to http://localhost:9090, login with admin credentials, select "stock-advisor" realm, navigate to Users section, and click "Add user" to create a new user with credentials
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - API Docs: http://localhost:8080/v3/api-docs
 
