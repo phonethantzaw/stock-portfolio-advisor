@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { AuthProvider } from "@/components/auth";
+import { GoogleAnalytics } from "@/components/google-analytics";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -54,6 +55,7 @@ function RootLayout({
         )}
         suppressHydrationWarning
       >
+        <GoogleAnalytics />
         <Providers>
           <AuthProvider>
             <div className="relative flex min-h-screen flex-col">
