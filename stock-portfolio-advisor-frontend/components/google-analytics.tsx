@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
 // Google Analytics measurement ID
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -18,8 +18,8 @@ declare global {
   }
 }
 
-// Initialize Google Analytics
-export const GoogleAnalytics = () => {
+// Analytics tracking component that uses useSearchParams
+const AnalyticsTracking = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -35,6 +35,11 @@ export const GoogleAnalytics = () => {
     });
   }, [pathname, searchParams]);
 
+  return null;
+};
+
+// Main Google Analytics component
+export const GoogleAnalytics = () => {
   if (!GA_MEASUREMENT_ID) {
     return null;
   }
@@ -60,6 +65,9 @@ export const GoogleAnalytics = () => {
           `,
         }}
       />
+      <Suspense fallback={null}>
+        <AnalyticsTracking />
+      </Suspense>
     </>
   );
 };
