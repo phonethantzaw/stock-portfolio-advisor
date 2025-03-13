@@ -76,32 +76,13 @@ No need to install Node.js, Java, or PostgreSQL locally - everything runs in con
      ```bash
      cp stock-portfolio-advisor-backend/.env.example stock-portfolio-advisor-backend/.env
      ```
-     Backend `.env` contains:
-     ```
-     OPENAI_API_KEY=your_openai_api_key
-     STOCK_API_KEY=your_stock_api_key
-     JWT_ISSUER_URI=http://keycloak:8080/realms/stock-advisor
-     POSTGRES_URL=jdbc:postgresql://postgres:5432/stock_advisor
-     POSTGRES_USER=admin
-     POSTGRES_PASSWORD=password
-     STOCK_API_URL=https://financialmodelingprep.com/api/v3
-     FRONTEND_URL=http://frontend:3000
-     ```
+    
    
    - **Frontend**: Copy the example environment file
      ```bash
      cp stock-portfolio-advisor-frontend/.env.example stock-portfolio-advisor-frontend/.env
      ```
-     Frontend `.env` contains:
-     ```
-     # Keycloak Configuration
-     NEXT_PUBLIC_KEYCLOAK_URL=http://keycloak:8080
-     NEXT_PUBLIC_KEYCLOAK_REALM=stock-advisor
-     NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=sa
      
-     # API Configuration
-     NEXT_PUBLIC_API_URL=http://backend:8080
-     ```
 
 4. Start all services:
    ```bash
