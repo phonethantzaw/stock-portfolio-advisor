@@ -2,7 +2,7 @@
 
 A modern web application that helps users manage and optimize their stock portfolios with AI-powered insights and recommendations.
 
-## 🌟 Features
+# 🌟 Features
 
 ### Frontend
 - 📊 Real-time stock market data visualization
